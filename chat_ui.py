@@ -1,7 +1,6 @@
 import streamlit as st
 import openai
 import config as cfg
-from utils import load_prompt_templates, load_prompts
 import json
 import os
 
@@ -11,8 +10,6 @@ st.markdown(
     """<style>.block-container{max-width: 86rem !important;}</style>""",
     unsafe_allow_html=True,
 )
-
-CHAT_SAVE_FILE = "chats_st.json"
 
 
 def save_chats_to_file(chats_st):
@@ -25,13 +22,13 @@ def save_chats_to_file(chats_st):
         }
         for chat_name, chat in chats_st.items()
     }
-    with open(CHAT_SAVE_FILE, "w") as f:
+    with open(cfg.CHATS_SAVE_FILE, "w") as f:
         json.dump(chats_to_save, f)
 
 
 def load_chats_from_file():
-    if os.path.exists(CHAT_SAVE_FILE):
-        with open(CHAT_SAVE_FILE, "r") as f:
+    if os.path.exists(cfg.CHATS_SAVE_FILE):
+        with open(cfg.CHATS_SAVE_FILE, "r") as f:
             chats_st = json.load(f)
         for chat_name in chats_st:
             chats_st[chat_name]["streaming"] = False
