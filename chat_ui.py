@@ -110,26 +110,36 @@ def render_sidebar(models_list):
         if st.button("New Chat"):
             chat_name = f"Chat{len(st.session_state.chats) + 1}"
             new_chat(chat_name)
+            st.session_state.selected_chat = chat_name
+            st.session_state.editable_chat_name = chat_name
+            st.session_state.current_chat = chat_name
 
         # Chat selection
         chat_names = list(st.session_state.chats.keys())
-        if "selected_chat" not in st.session_state:
-            st.session_state.selected_chat = chat_names[0] if chat_names else None
+        if not chat_names:
+            st.session_state.selected_chat = None
+            st.session_state.current_chat = None
+            st.session_state.editable_chat_name = ""
+        else:
+            if "selected_chat" not in st.session_state:
+                st.session_state.selected_chat = chat_names[0] if chat_names else None
 
-        selected_chat_index = (
-            chat_names.index(st.session_state.selected_chat)
-            if st.session_state.selected_chat
-            else 0
-        )
-        selected_chat = st.selectbox(
-            "Select a chat",
-            chat_names,
-            index=selected_chat_index,
-            key="chat_selection",
-            on_change=update_selected_chat,
-            args=(chat_names,),
-        )
+            selected_chat_index = (
+                chat_names.index(st.session_state.selected_chat)
+                if st.session_state.selected_chat
+                else 0
+            )
+            selected_chat = st.selectbox(
+                "Select a chat",
+                chat_names,
+                index=selected_chat_index,
+                key="chat_selection",
+                on_change=update_selected_chat,
+                args=(chat_names,),
+            )
 
+    with st.sidebar:
+        st.markdown("---")
         # GPT Model Configuration
         st.session_state.params["model"] = st.selectbox(
             "Select a model",
@@ -147,29 +157,33 @@ def render_sidebar(models_list):
     with st.sidebar:
         st.markdown("---")
         # Chat name editing
+        # if (
+        #     "editable_chat_name" not in st.session_state
+        #     or selected_chat != st.session_state.editable_chat_name
+        # ):
+        #     st.session_state.editable_chat_name = selected_chat
 
-        # The text input for editing the chat name should reflect the currently
-        # selected chat
-        if (
-            "editable_chat_name" not in st.session_state
-            or selected_chat != st.session_state.editable_chat_name
-        ):
-            st.session_state.editable_chat_name = selected_chat
+        # new_chat_name = st.text_input(
+        #     "Edit chat name", st.session_state.editable_chat_name, key="chat_name_input"
+        # )
+        if st.session_state.current_chat:
+            new_chat_name = st.text_input(
+                "Edit chat name",
+                st.session_state.editable_chat_name,
+                key="chat_name_input",
+            )
 
-        new_chat_name = st.text_input(
-            "Edit chat name", st.session_state.editable_chat_name, key="chat_name_input"
-        )
+            if st.button("Rename Chat"):
+                if new_chat_name and new_chat_name != st.session_state.current_chat:
+                    st.session_state.chats[new_chat_name] = st.session_state.chats.pop(
+                        st.session_state.current_chat
+                    )
+                    st.session_state.selected_chat = new_chat_name
+                    st.session_state.editable_chat_name = new_chat_name
+                    st.session_state.current_chat = new_chat_name
+                    save_chats_to_file(st.session_state.chats)
 
-        if st.button("Rename Chat"):
-            if new_chat_name and new_chat_name != st.session_state.selected_chat:
-                st.session_state.chats[new_chat_name] = st.session_state.chats.pop(
-                    st.session_state.selected_chat
-                )
-                st.session_state.selected_chat = new_chat_name
-                st.session_state.editable_chat_name = new_chat_name
-                st.session_state.current_chat = new_chat_name
-                save_chats_to_file(st.session_state.chats)
-
+    with st.sidebar:
         st.markdown("---")
 
         # Delete current chat
@@ -180,10 +194,13 @@ def render_sidebar(models_list):
 def delete_chat(chat_name):
     if chat_name in st.session_state.chats:
         del st.session_state.chats[chat_name]
-        if chat_name == st.session_state.selected_chat:
-            st.session_state.selected_chat = None
-        if chat_name == st.session_state.current_chat:
-            st.session_state.current_chat = None
+        # if chat_name == st.session_state.selected_chat:
+        #     st.session_state.selected_chat = None
+        # if chat_name == st.session_state.current_chat:
+        #     st.session_state.current_chat = None
+        st.session_state.selected_chat = None
+        st.session_state.current_chat = None
+        st.session_state.editable_chat_name = ""
         save_chats_to_file(st.session_state.chats)
         st.rerun()
 
