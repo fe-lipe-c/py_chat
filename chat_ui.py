@@ -184,8 +184,19 @@ def render_sidebar(models_list):
     with st.sidebar:
         st.markdown("---")
 
+        # embeddings_db_list = list(cfg.EMBEDDINGS_DBS.keys())
+        embeddings_db_list = ["none", "bbg_chat", "cvm"]
+        st.session_state.params["embeddings"] = st.selectbox(
+            "Select an context database",
+            embeddings_db_list,
+            index=0,
+        )
+
+    with st.sidebar:
+        st.markdown("---")
+
         # Delete current chat
-        if st.session_state.current_chat and st.button("Delete Chat"):
+        if st.session_state.current_chat and st.button("Delete Current Chat"):
             delete_chat(st.session_state.current_chat)
 
 
