@@ -88,7 +88,7 @@ def chat(
     """
 
     completion = openai.chat.completions.create(
-        model=st.session_state["params"]["model"],
+        model=cfg.OPENAI_MODELS[st.session_state["params"]["model"]]["model_name"],
         messages=messages,
         max_tokens=st.session_state["params"]["max_tokens"],
         temperature=st.session_state["params"]["temperature"],
