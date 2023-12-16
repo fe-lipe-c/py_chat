@@ -59,6 +59,13 @@ def new_chat(chat_name):
             "streaming": False,
             "generator": None,
         }
+    else:
+        chat_name = f"{chat_name} (copy)"
+        st.session_state.chats[chat_name] = {
+            "chat_history": [],
+            "streaming": False,
+            "generator": None,
+        }
     st.session_state.current_chat = chat_name
     # Save chats to file
     save_chats_to_file(st.session_state.chats)
@@ -157,15 +164,6 @@ def render_sidebar(models_list):
     with st.sidebar:
         st.markdown("---")
         # Chat name editing
-        # if (
-        #     "editable_chat_name" not in st.session_state
-        #     or selected_chat != st.session_state.editable_chat_name
-        # ):
-        #     st.session_state.editable_chat_name = selected_chat
-
-        # new_chat_name = st.text_input(
-        #     "Edit chat name", st.session_state.editable_chat_name, key="chat_name_input"
-        # )
         if st.session_state.current_chat:
             new_chat_name = st.text_input(
                 "Edit chat name",
