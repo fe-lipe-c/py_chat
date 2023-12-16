@@ -131,8 +131,9 @@ def render_sidebar(models_list):
         st.session_state.params["temperature"] = st.slider(
             "Temperature", min_value=0.0, max_value=1.0, value=0.5, step=0.01
         )
+        max_tokens = cfg.OPENAI_MODELS[st.session_state.params["model"]]["max_tokens"]
         st.session_state.params["max_tokens"] = st.slider(
-            "Max Tokens", min_value=1, max_value=2048, value=1000, step=1
+            "Max Tokens", min_value=1, max_value=max_tokens, value=1000, step=1
         )
 
 
@@ -194,7 +195,7 @@ def update_assistant_response(chat_data):
 
 
 def main():
-    models_list = ["gpt-4-1106-preview", "gpt-4", "gpt-4-32k", "gpt-3.5-turbo-1106"]
+    models_list = list(cfg.OPENAI_MODELS.keys())
     init_session()
     render_sidebar(models_list)
     run_chat_interface()

@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 import os
 
 DATA_PATH = Path("__file__").parent / "data"
@@ -13,6 +14,9 @@ Path.mkdir(CHATS_PATH, parents=True, exist_ok=True)
 # Create file 'chats_st.json' if it doesn't exist.
 CHATS_SAVE_FILE = CHATS_PATH / "chats_st.json"
 
-# Load 'participantes' data.
+# Load openai models list
+with open(REFERENCE_PATH / "openai_models.json", "r") as f:
+    OPENAI_MODELS = json.load(f)
 
+# OpenAI API key
 OPENAI_KEY = os.environ.get("OPENAI_API_KEY")
