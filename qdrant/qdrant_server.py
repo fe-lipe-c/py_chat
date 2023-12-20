@@ -1,8 +1,13 @@
+import pandas as pd
 from pathlib import Path
 from typing import Optional
 from qdrant_client.http.models import VectorParams, Distance
 from qdrant_client.http import models
 import config as cfg
+from process_docs.process_pdf import process_pdf
+
+# from langchain.text_splitter import RecursiveCharacterTextSplitter
+# from langchain.document_loaders import csv_loader, PDFPlumberLoader, Docx2txtLoader
 
 
 def new_collection(collection_name: str, vector_size: int = 1536):
@@ -123,3 +128,55 @@ def list_collection(collection_name: Optional[str] = None):
 
         print(f"Collection '{collection_name}' contains {vector_count} vectors.")
         return db_points
+
+
+def upload_file(
+    filepath: str,
+    collection_name: str,
+):
+    """Carrega o arquivo na base de índices."""
+
+    # db_points = cfg.QDRANT_DB_CLIENT.scroll(
+    #     collection_name=collection_name,
+    #     scroll_filter=models.Filter(
+    #         must=[
+    #             models.FieldCondition(
+    #                 key="filename", match=models.MatchValue(value=filepath)
+    #             )
+    #         ]
+    #     ),
+    #     with_vectors=False,
+    # )
+    # if len(db_points[0]) != 0:
+    #     return (
+    #         f"File '{filepath}' already uploaded to the vector database.",
+    #         "file_exists",
+    #     )
+
+    pages = process_pdf(filepath)
+    embedding_list = []
+    for input_text in pages.values():
+        emb = cfg.OPENAI_CLIENT.embeddings.create(
+            input=[input_text],
+            model="text-embedding-ada-002",
+        )
+        embedding_list.append(emb.data[0].embedding)
+
+    df_pages = pd.DataFrame(list(pages.items()), columns=["page", "text"])
+    df_pages["embedding"] = embedding_list
+    df_pages["filename"] = filepath
+
+    cfg.QDRANT_DB_CLIENT.upsert(
+        collection_name=collection_name,
+        points=[
+            models.PointStruct(
+                id=k,
+                vector={
+                    "content": v["embedding"],
+                },
+                payload=v.to_dict(),
+            )
+            for k, v in df_pages.iterrows()
+        ],
+    )
+    return f"Documento carregado com sucesso na base {collection_name}!", "success"

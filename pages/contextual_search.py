@@ -61,7 +61,7 @@ def main_panel():
     st.markdown(f"### {st.session_state.selected_collection}")
     list_embbedings = qs.list_collection(st.session_state.selected_collection)
     nr_embbedings = len(list_embbedings) if list_embbedings else 0
-    st.markdown(f"Number of documents in collection: {nr_embbedings}")
+    st.markdown(f"Number of embeddings in collection: {nr_embbedings}")
 
     st.markdown("---")
 
@@ -83,10 +83,32 @@ def main_panel():
     list_to_process = os.listdir(
         cfg.CONTEXT_DOCS_PATH / st.session_state.selected_collection / "to_process"
     )
+
     if list_to_process:
         st.markdown("Documents to process:")
         for file in list_to_process:
             st.markdown(f"{file}")
+
+    st.markdown("---")
+    # Selection box to process the documents
+    select_process_file = st.selectbox(
+        "Select a document to process", list_to_process, index=0
+    )
+    if st.button("Add document to collection"):
+        file_to_process = (
+            cfg.CONTEXT_DOCS_PATH
+            / st.session_state.selected_collection
+            / "to_process"
+            / select_process_file
+        )
+        print(file_to_process)
+        qs_message = qs.upload_file(
+            file_to_process, st.session_state.selected_collection
+        )
+        if qs_message[1] == "success":
+            st.success(qs_message[0])
+        elif qs_message[1] == "file_exists":
+            st.warning(qs_message[0])
 
 
 def main():

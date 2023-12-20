@@ -1,6 +1,7 @@
 from pathlib import Path
 import json
 import os
+import openai
 from qdrant_client import QdrantClient
 
 DATA_PATH = Path("__file__").parent / "data"
@@ -26,3 +27,6 @@ with open(REFERENCE_PATH / "openai_models.json", "r") as f:
 
 # OpenAI API key
 OPENAI_KEY = os.environ.get("OPENAI_API_KEY")
+
+# OpenAI Client
+OPENAI_CLIENT = openai.OpenAI()
